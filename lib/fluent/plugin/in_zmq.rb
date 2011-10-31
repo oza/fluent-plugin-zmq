@@ -41,7 +41,7 @@ class ZMQInput < Input
 
   def start
     Signal.trap(:INT){
-      puts ":INT"
+      $log.error "SIGINT occured. shutdown..."
       @server.close
       exit(0)
     }
@@ -96,9 +96,10 @@ class ZMQInput < Input
     time = Engine.now if time == 0
     record = msg[2]
 
-    p tag
-    p time
-    p record
+    # for debugging
+    #p tag
+    #p time
+    #p record
 
     Engine.emit(tag, time, record)
 
