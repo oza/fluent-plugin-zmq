@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.version     = Fluent::Plugin::Zmq::VERSION
   s.authors     = ["OZAWA Tsuyoshi"]
   s.email       = ["ozawa.tsuyoshi@gmail.com"]
-  s.homepage    = ""
+  s.homepage    = "https://github.com/oza/fluent-plugin-zmq"
   s.summary     = %q{zmq plugin for fluent, an event collector}
   s.description = %q{zmq plugin for fluent, an event collector}
 
