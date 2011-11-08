@@ -51,6 +51,12 @@ class ZMQInput < Input
     @server = @zmq.socket(ZMQ::UPSTREAM)
     @server.bind("tcp://" + @bind + ":" + @port.to_s)
     @thread = Thread.new(&method(:run))
+    @cached_unpacker = MessagePack::Unpacker.new
+  end
+
+  def shutdown
+    @server.close
+    @thread.join
   end
 
   def run
@@ -67,7 +73,6 @@ class ZMQInput < Input
       $log.error_backtrace
     end
   end
-
 
   # message Entry {
   #   1: long time
@@ -92,47 +97,35 @@ class ZMQInput < Input
   def on_message(msg)
     # TODO format error
     tag = msg[0].to_s
-    time = msg[1]
-    time = Engine.now if time == 0
-    record = msg[2]
+    entries = msg[1]
 
-    # for debugging
+    if entries.class == String
+      # PackedForward
+      es = MessagePackEventStream.new(entries, @cached_unpacker)
+      Engine.emit_stream(tag, es) 
+
+    elsif entries.class == Array
+      # Forward
+      es = MultiEventStream.new
+      entries.each {|e|
+        time = e[0].to_i
+        time = (now ||= Engine.now) if time == 0
+        record = e[1]
+        es.add(time, record)
+      }
+      Engine.emit_stream(tag, es)
+    else
+      # Message
+      time = msg[1]
+      time = Engine.now if time == 0
+      record = msg[2]
+      Engine.emit(tag, time, record)
+    end
     #p tag
     #p time
     #p record
-
-    Engine.emit(tag, time, record)
-
-    # TODO : support other formats
-    #if entries.class == String
-    #  # PackedForward
-    #  es = MessagePackEventStream.new(entries, @cached_unpacker)
-    #  Engine.emit_stream(tag, es)
-
-    #elsif entries.class == Array
-    #  # Forward
-    #  es = MultiEventStream.new
-    #  entries.each {|e|
-    #    time = e[0].to_i
-    #    time = (now ||= Engine.now) if time == 0
-    #    record = e[1]
-    #    es.add(time, record)
-    #  }
-    #  Engine.emit_stream(tag, es)
-
-    #else
-    #  # Message
-    #  time = msg[1]
-    #  time = Engine.now if time == 0
-    #  record = msg[2]
-    #  Engine.emit(tag, time, record)
-    #end
   end
 
-  def shutdown
-    @server.close
-    #@thread.join # TODO
-  end
 end
 
 end
