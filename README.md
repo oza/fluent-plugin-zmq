@@ -1,4 +1,4 @@
-Zeromq plugin for Fluentd
+Zeromq plugin for [Fluentd](http://fluentd.org)
 =============
 fluent-plugin-zmq provides an adaptor between fluentd and zeromq.
 
