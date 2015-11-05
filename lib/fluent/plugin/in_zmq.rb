@@ -95,7 +95,7 @@ class ZMQInput < Input
     if entries.class == String
       # PackedForward
       es = MessagePackEventStream.new(entries, @cached_unpacker)
-      Engine.emit_stream(tag, es) 
+      router.emit_stream(tag, es)
 
     elsif entries.class == Array
       # Forward
@@ -106,19 +106,15 @@ class ZMQInput < Input
         record = e[1]
         es.add(time, record)
       }
-      Engine.emit_stream(tag, es)
+      router.emit_stream(tag, es)
     else
       # Message
       time = msg[1]
       time = Engine.now if time == 0
       record = msg[2]
-      Engine.emit(tag, time, record)
+      router.emit(tag, time, record)
     end
-    #p tag
-    #p time
-    #p record
   end
-
 end
 
 end
