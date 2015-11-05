@@ -61,8 +61,8 @@ class ZMQInput < Input
         end
       end
     rescue
-      $log.error "unexpected error", :error=>$!.to_s
-      $log.error_backtrace
+      log.error "unexpected error", :error=>$!.to_s
+      log.error_backtrace
     end
   end
 
