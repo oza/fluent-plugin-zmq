@@ -39,12 +39,6 @@ class ZMQInput < Input
   end
 
   def start
-    Signal.trap(:INT){
-      $log.error "SIGINT occured. shutdown..."
-      @server.close
-      exit(0)
-    }
-
     $log.debug "listening http on #{@bind}:#{@port}"
     @zmq = ZMQ::Context.new
     @server = @zmq.socket(ZMQ::UPSTREAM)
