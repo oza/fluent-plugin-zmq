@@ -44,7 +44,6 @@ class ZMQInput < Input
     @server = @zmq.socket(ZMQ::UPSTREAM)
     @server.bind("tcp://" + @bind + ":" + @port.to_s)
     @thread = Thread.new(&method(:run))
-    @cached_unpacker = MessagePack::Unpacker.new
   end
 
   def shutdown
@@ -94,7 +93,7 @@ class ZMQInput < Input
 
     if entries.class == String
       # PackedForward
-      es = MessagePackEventStream.new(entries, @cached_unpacker)
+      es = MessagePackEventStream.new(entries)
       router.emit_stream(tag, es)
 
     elsif entries.class == Array
