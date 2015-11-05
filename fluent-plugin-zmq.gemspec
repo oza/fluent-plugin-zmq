@@ -4,7 +4,7 @@ require "fluent-plugin-zmq/version"
 
 Gem::Specification.new do |s|
   s.name        = "fluent-plugin-zmq"
-  s.version     = Fluent::Plugin::Zmq::VERSION
+  s.version     = Fluent::ZmqPlugin::VERSION
   s.authors     = ["OZAWA Tsuyoshi"]
   s.email       = ["ozawa.tsuyoshi@gmail.com"]
   s.homepage    = "https://github.com/oza/fluent-plugin-zmq"
