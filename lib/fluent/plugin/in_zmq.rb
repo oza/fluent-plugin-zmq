@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 
-require "fluent-plugin-zmq/version"
 #
 # Fluent
 #
@@ -40,18 +39,11 @@ class ZMQInput < Input
   end
 
   def start
-    Signal.trap(:INT){
-      $log.error "SIGINT occured. shutdown..."
-      @server.close
-      exit(0)
-    }
-
     $log.debug "listening http on #{@bind}:#{@port}"
     @zmq = ZMQ::Context.new
     @server = @zmq.socket(ZMQ::UPSTREAM)
     @server.bind("tcp://" + @bind + ":" + @port.to_s)
     @thread = Thread.new(&method(:run))
-    @cached_unpacker = MessagePack::Unpacker.new
   end
 
   def shutdown
@@ -69,8 +61,8 @@ class ZMQInput < Input
         end
       end
     rescue
-      $log.error "unexpected error", :error=>$!.to_s
-      $log.error_backtrace
+      log.error "unexpected error", :error=>$!.to_s
+      log.error_backtrace
     end
   end
 
@@ -101,8 +93,8 @@ class ZMQInput < Input
 
     if entries.class == String
       # PackedForward
-      es = MessagePackEventStream.new(entries, @cached_unpacker)
-      Engine.emit_stream(tag, es) 
+      es = MessagePackEventStream.new(entries)
+      router.emit_stream(tag, es)
 
     elsif entries.class == Array
       # Forward
@@ -113,19 +105,15 @@ class ZMQInput < Input
         record = e[1]
         es.add(time, record)
       }
-      Engine.emit_stream(tag, es)
+      router.emit_stream(tag, es)
     else
       # Message
       time = msg[1]
       time = Engine.now if time == 0
       record = msg[2]
-      Engine.emit(tag, time, record)
+      router.emit(tag, time, record)
     end
-    #p tag
-    #p time
-    #p record
   end
-
 end
 
 end
