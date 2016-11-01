@@ -18,6 +18,7 @@
 #    limitations under the License.
 #
 
+require 'fluent/input'
 
 module Fluent
 
