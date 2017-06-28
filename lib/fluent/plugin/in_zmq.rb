@@ -37,7 +37,7 @@ class ZMQInput < Input
 
   def configure(conf)
     super
-    @unpacker = Fluent::MessagePackFactory.engine_factory.unpacker
+    @unpacker = Fluent::Engine.msgpack_factory.unpacker
   end
 
   def start

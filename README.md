@@ -16,28 +16,27 @@ Run a sample code.
 
 ~~~~~
     #!/usr/bin/env ruby
-    require 'zmq'
+    require 'cztop'
     require 'msgpack'
-    
-    z = ZMQ::Context.new
-    s = z.socket(ZMQ::DOWNSTREAM)
-    s.connect("tcp://127.0.0.1:4444")
+
+    s = CZTop::Socket::PUSH.new("tcp://127.0.0.1:4010")
     tag = "debug.test"
     # echo '{"json":"message"}' | fluent-cat debug.test
     array = ["key" => "value"]
-    
+
     def write_impl(s, tag, array)
+      msg = ''
       begin
-        s.send([tag, Time.now.to_s, array].to_msgpack)
+        s << [tag, Time.now.to_i, array].to_msgpack
       rescue
         $stderr.puts "write failed: #{$!}"
-        s.close
+      ensure
         return false
       end
-    
+
       return true
     end
-    
+
     write_impl(s, tag, array)
 ~~~~~
 
@@ -48,4 +47,3 @@ Happy logging with zeromq and fluetnd! :)
 - ZeroMQ output
 - ZeroMQ forwarding
 - JSON support
-
