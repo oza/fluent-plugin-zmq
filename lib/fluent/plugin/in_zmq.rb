@@ -18,11 +18,12 @@
 #    limitations under the License.
 #
 
+require 'fluent/input'
 
 module Fluent
 
 class ZMQInput < Input
-  Plugin.register_input('zmq', self)
+  Fluent::Plugin.register_input('zmq', self)
 
   config_param :port,            :integer, :default => 4010
   config_param :bind,            :string,  :default => '0.0.0.0'
@@ -30,34 +31,37 @@ class ZMQInput < Input
   #config_param :server_type,     :string,  :default => 'nonblocking'
 
   def initialize
-    require 'zmq'
+    require 'cztop'
     super
   end
 
   def configure(conf)
     super
+    @unpacker = Fluent::MessagePackFactory.engine_factory.unpacker
   end
 
   def start
+    super
     $log.debug "listening http on #{@bind}:#{@port}"
-    @zmq = ZMQ::Context.new
-    @server = @zmq.socket(ZMQ::UPSTREAM)
-    @server.bind("tcp://" + @bind + ":" + @port.to_s)
+    @running = true
+    @socket = CZTop::Socket::PULL.new("tcp://" + @bind + ":" + @port.to_s)
     @thread = Thread.new(&method(:run))
   end
 
   def shutdown
-    @server.close
-    @thread.join
+    @running = false
+    @thread.kill
+    @socket.close
+    super
   end
 
   def run
     begin
-      while true
-        ret = ZMQ::select([@server])
-        ret[0].each do |sock|
-          msg = sock.recv
-          on_message(MessagePack.unpack(msg))
+      while @running
+        message = @socket.receive rescue nil
+        message.to_a.each do |msg|
+          @unpacker.feed(msg)
+          on_message(@unpacker.read)
         end
       end
     rescue

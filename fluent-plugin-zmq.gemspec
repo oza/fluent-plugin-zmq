@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   s.add_dependency "fluentd", [">= 0.10.58", "< 2"]
-  # specify any dependencies here; for example:
-  # s.add_development_dependency "rspec"
-  # s.add_runtime_dependency "rest-client"
+  s.add_dependency "cztop"
+  s.add_development_dependency "rake", ">= 0.9.2"
+  s.add_development_dependency "test-unit", ">= 3.0.8"
 end
